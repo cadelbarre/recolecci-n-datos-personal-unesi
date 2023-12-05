@@ -1,11 +1,11 @@
 'use client'
 import { useState } from 'react'
 import z from 'zod'
+import toast from 'react-hot-toast'
 
 import { Users, Hospital, CellPhone, Job, Gender } from './icons'
 import { capitalizeWords } from '../utils/formaters'
 import { User } from '../utils/repository'
-import toast from 'react-hot-toast'
 
 const schemaForm = z.object({
   nombreCompleto: z
@@ -75,17 +75,14 @@ export default function Form (): JSX.Element {
       return
     }
 
-    await toast.promise(
-      User.save({ body: parsed.data }),
-      {
-        loading: 'Loading',
-        success: (data) => {
-          target.reset()
-          return `${data.data?.message ?? ''}`
-        },
-        error: (err) => `This just happened: ${err.toString()}`
-      }
-    )
+    toast.loading('Enviando...', { duration: 2000 })
+    const { errors, data } = await User.save({ body: parsed.data })
+
+    if (errors != null) toast.error(errors.message)
+    if (data != null) {
+      toast.success(data.message)
+      target.reset()
+    }
 
     setIsLoading(false)
   }

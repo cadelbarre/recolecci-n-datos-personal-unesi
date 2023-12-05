@@ -8,12 +8,13 @@ export async function POST (request: Request): Promise<Response> {
 
   try {
     await prisma.personal.create({
-      data: body.data
+      data: body
     })
 
-    return NextResponse.json({ isSaved: true })
+    return NextResponse.json({ isSaved: true, error: null })
   } catch (error) {
-    return NextResponse.json({ isSaved: false })
+    console.log({ error })
+    return NextResponse.json({ isSaved: false, error })
   } finally {
     await prisma.$disconnect()
   }
