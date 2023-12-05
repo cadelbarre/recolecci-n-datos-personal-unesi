@@ -9,6 +9,7 @@ interface Body {
 }
 
 export class User {
+  /** Permite guardar la información en la base de datos */
   static async save (
     { body }: { body: Body }
   ): Promise<
