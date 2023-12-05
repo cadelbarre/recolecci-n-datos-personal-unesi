@@ -8,13 +8,21 @@ import { capitalizeWords } from '../utils/formaters'
 import { User } from '../utils/repository'
 
 const schemaForm = z.object({
+  cedula: z
+    .string({ required_error: 'Campo requerido' })
+    .regex(/[0-9]$/g, { message: 'Debe incluir solo números' })
+    .min(4, { message: 'Debe contener mínimo 4 caracteres' })
+    .trim(),
   nombreCompleto: z
     .string({ required_error: 'Campo requerido' })
     .min(3, { message: 'Debe contener mínimo 5 caracteres' })
+    .trim()
     .transform(value => capitalizeWords(value)),
   celular: z
     .string({ required_error: 'Campo requerido' })
     .min(5, { message: 'Mínimo 5 caracteres' })
+    .regex(/[0-9]/gi, 'Debe incluir solo números')
+    .trim()
     .transform(value => value.trim().replace(/ /g, '')),
   genero: z
     .string({ required_error: 'Campo requerido' })
@@ -28,28 +36,36 @@ const schemaForm = z.object({
     .string()
     .optional()
     .transform(value => capitalizeWords(value ?? '')),
+  otroCargo: z
+    .string()
+    .optional()
+    .transform(value => capitalizeWords(value ?? '')),
   cargo: z
     .string({ required_error: 'Campo requerido' })
     .min(3, { message: 'Debe contener mínimo 5 caracteres' })
+    .trim()
     .transform(value => capitalizeWords(value))
 })
 
 const INITIAL_FIELDS_ERRORS = {
+  cedula: null,
   nombreCompleto: null,
   celular: null,
   genero: null,
   clinica: null,
   otraClinica: null,
-  cargo: null
+  cargo: null,
+  otroCargo: null
 }
 
 export default function Form (): JSX.Element {
   const [fieldErrors, setFieldErrors] = useState(INITIAL_FIELDS_ERRORS)
   const [isLoading, setIsLoading] = useState(false)
-  const [clinic, setClinic] = useState('')
+  const [other, setOther] = useState({ clinic: '', job: '' })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
+    setFieldErrors(INITIAL_FIELDS_ERRORS)
     setIsLoading(true)
     const target = e.target as HTMLFormElement
 
@@ -93,6 +109,24 @@ export default function Form (): JSX.Element {
 
         <div>
           <label className='block space-y-2 text-gray-800 w-full'>
+            <span>Cedula</span>
+            <div className='relative'>
+              <Users />
+              <input
+                name='cedula'
+                id='cedula'
+                type='text'
+                placeholder='12345678'
+                className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100 '
+                autoFocus
+              />
+            </div>
+          </label>
+          {fieldErrors.cedula != null && <p className='text-xs italic mt-1 text-rose-500'>{fieldErrors.cedula}</p>}
+        </div>
+
+        <div>
+          <label className='block space-y-2 text-gray-800 w-full'>
             <span>Nombre Completo</span>
             <div className='relative'>
               <Users />
@@ -102,8 +136,6 @@ export default function Form (): JSX.Element {
                 type='text'
                 placeholder='Juan Perez'
                 className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100 '
-                autoFocus
-                required
               />
             </div>
           </label>
@@ -121,7 +153,6 @@ export default function Form (): JSX.Element {
                 type='text'
                 placeholder='3001234567'
                 className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100'
-                required
               />
             </div>
           </label>
@@ -130,7 +161,7 @@ export default function Form (): JSX.Element {
 
         <div>
           <label className='block space-y-2 text-gray-800'>
-            <span>Genero</span>
+            <span>Género</span>
             <div className='relative'>
               <Gender />
               <select name='genero' id='genero' className='w-full pl-12 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg'>
@@ -149,7 +180,7 @@ export default function Form (): JSX.Element {
             <span>Clínica donde laboras</span>
             <div className='relative'>
               <Hospital />
-              <select name='clinica' id='clinica' className='w-full pl-12 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg' onChange={(e) => setClinic(e.target.value)}>
+              <select name='clinica' id='clinica' className='w-full pl-12 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg' onChange={(e) => setOther({ ...other, clinic: e.target.value })}>
                 <option value=''>Seleccione uno</option>
                 <option value='Cardiosalud - Santa Martha'> Cardiosalud - Santa Martha </option>
                 <option value='Clínica Abaton'> Clínica Abaton </option>
@@ -181,7 +212,7 @@ export default function Form (): JSX.Element {
                 id='otraClinica'
                 type='text'
                 className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100'
-                disabled={clinic !== 'Otro...'}
+                disabled={other.clinic !== 'Otro...'}
               />
             </div>
           </label>
@@ -193,16 +224,34 @@ export default function Form (): JSX.Element {
             <span>Cargo</span>
             <div className='relative'>
               <Job />
-              <input
-                name='cargo'
-                id='cargo'
-                type='text'
-                className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100'
-                required
-              />
+              <select name='cargo' id='cargo' className='w-full pl-12 pr-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg' onChange={(e) => setOther({ ...other, job: e.target.value })}>
+                <option value=''>Seleccione uno</option>
+                <option value='Auxiliar de enfermería servicio hemodinamia'>Auxiliar de enfermería servicio hemodinamia </option>
+                <option value='Jefe de Enfermería servicio HEMODINAMIA'>Jefe de Enfermería servicio HEMODINAMIA </option>
+                <option value='Administrativo'>Administrativo </option>
+                <option value='Técnico'>Técnico </option>
+                <option value='Otro'>Otro</option>
+              </select>
             </div>
           </label>
           {fieldErrors.cargo != null && <p className='text-xs italic mt-1 text-rose-500'>{fieldErrors.cargo}</p>}
+        </div>
+
+        <div>
+          <label className='block space-y-2 text-gray-800'>
+            <span>Otro Cargo</span>
+            <div className='relative'>
+              <Hospital />
+              <input
+                name='otroCargo'
+                id='otroCargo'
+                type='text'
+                className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100'
+                disabled={!other.job.includes('Otro')}
+              />
+            </div>
+          </label>
+          {fieldErrors.otroCargo != null && <p className='text-xs italic mt-1 text-rose-500'>{fieldErrors.otroCargo}</p>}
         </div>
 
         <button
