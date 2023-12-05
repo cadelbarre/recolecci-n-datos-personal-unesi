@@ -122,7 +122,7 @@ export default function Form (): JSX.Element {
                 name='celular'
                 id='celular'
                 type='text'
-                placeholder='Juan Perez'
+                placeholder='3001234567'
                 className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100'
                 required
               />
@@ -200,7 +200,6 @@ export default function Form (): JSX.Element {
                 name='cargo'
                 id='cargo'
                 type='text'
-                placeholder='Juan Perez'
                 className='w-full pl-12 pr-3 py-2 text-gray-500 bg-slate-50/50 outline-none border border-gray-300 focus:border-blue-600 shadow-sm rounded-lg disabled:cursor-not-allowed disabled:bg-slate-100'
                 required
               />
