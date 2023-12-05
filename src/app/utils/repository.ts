@@ -8,6 +8,13 @@ interface Body {
   cargo: string
 }
 
+const CODE_REQUEST_ERROR = new Map(
+  [
+    ['P2002', 'El usuario ya se encuentra registrado'],
+    ['default', 'No se puede guardar la información.']
+  ]
+)
+
 export class User {
   /** Permite guardar la información en la base de datos */
   static async save (
@@ -25,7 +32,8 @@ export class User {
       const json = await response.json()
 
       if (json.isSaved === false) {
-        throw new Error('No se puede guardar la información.')
+        const message = CODE_REQUEST_ERROR.get(json?.error?.code ?? 'default')
+        throw new Error(message)
       }
 
       return {
@@ -35,6 +43,7 @@ export class User {
         }
       }
     } catch (error) {
+      console.log({ error })
       return {
         errors: error as Error,
         data: null
