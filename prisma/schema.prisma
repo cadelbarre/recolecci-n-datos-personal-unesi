@@ -12,10 +12,12 @@ datasource db {
 
 model Personal {
   id             Int    @id @default(autoincrement())
+  cedula         String @unique
   nombreCompleto String
   celular        String
   genero         String
   clinica        String
   otraClinica    String
   cargo          String
+  otroCargo      String
 }
